@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="my">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Movie Watch</title>
+  <style>
+    /* Auto theme: follows user's OS preference */
+    :root{
+      --accent:#6aa6ff;
+      --border: rgba(255,255,255,.10);
+      --radius: 18px;
+    }
+
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#0b1220;
+        --card: rgba(18,26,47,.60);
+        --text:#e8eefc;
+        --muted:#aab6d6;
+        --panelBorder: rgba(255,255,255,.08);
+      }
+    }
+
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f6f8ff;
+        --card: rgba(255,255,255,.75);
+        --text:#0b1430;
+        --muted:#4f5c7a;
+        --panelBorder: rgba(0,0,0,.08);
+      }
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1200px 600px at 15% 10%, rgba(106,166,255,.25), transparent 55%),
+        radial-gradient(900px 500px at 85% 20%, rgba(120,88,255,.18), transparent 50%),
+        var(--bg);
+      color: var(--text);
+      min-height:100vh;
+    }
+
+    header{
+      padding:22px 16px;
+      max-width:1100px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .logo{
+      width:38px; height:38px;
+      border-radius:12px;
+      background:linear-gradient(135deg, rgba(106,166,255,1), rgba(120,88,255,1));
+      box-shadow: 0 10px 30px rgba(106,166,255,.25);
+    }
+
+    .top-right{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+
+    .pill{
+      padding:9px 12px;
+      border-radius:999px;
+      border:1px solid var(--panelBorder);
+      background: var(--card);
+      color: var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+    }
+
+    main{
+      max-width:1100px;
+      margin:0 auto;
+      padding: 0 16px 30px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:16px;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap:16px;
+      align-items:start;
+    }
+    @media (max-width: 900px){
+      .layout{ grid-template-columns: 1fr; }
+    }
+
+    .panel{
+      background: var(--card);
+      border:1px solid var(--panelBorder);
+      border-radius:var(--radius);
+      overflow:hidden;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Category tabs */
+    .tabs{
+      padding:12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .tab{
+      appearance:none;
+      border:1px solid var(--panelBorder);
+      background: transparent;
+      color: var(--muted);
+      padding:10px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:13px;
+    }
+    .tab:hover{
+      border-color: rgba(106,166,255,.35);
+      color: var(--text);
+      background: rgba(106,166,255,.10);
+    }
+    .tab.active{
+      border-color: rgba(106,166,255,.45);
+      color: var(--text);
+      background: rgba(106,166,255,.16);
+    }
+
+    /* Movie list */
+    .list{
+      padding:12px;
+      border-top:1px solid var(--panelBorder);
+    }
+    .list h2{
+      margin:8px 10px 10px;
+      font-size:16px;
+      color: var(--muted);
+      font-weight:800;
+    }
+
+    .movie{
+      width:100%;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      cursor:pointer;
+      text-align:left;
+    }
+    .movie:hover{
+      background: rgba(106,166,255,.10);
+      border-color: rgba(106,166,255,.22);
+    }
+    .movie.active{
+      background: rgba(106,166,255,.14) !important;
+      border-color: rgba(106,166,255,.35) !important;
+    }
+
+    .thumb{
+      width:56px;
+      height:56px;
+      border-radius:14px;
+      background: linear-gradient(135deg, rgba(106,166,255,.35), rgba(120,88,255,.25));
+      border:1px solid var(--panelBorder);
+      flex:0 0 auto;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+    }
+    .meta{ flex:1; min-width:0; }
+    .title{
+      font-weight:900;
+      line-height:1.2;
+      margin:1px 0 6px;
+      font-size:14px;
+    }
+    .desc{
+      margin:0;
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.4;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient: vertical;
+      overflow:hidden;
+    }
+    .tagrow{
+      margin-top:8px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .tag{
+      font-size:11px;
+      padding:5px 8px;
+      border-radius:999px;
+      border:1px solid var(--panelBorder);
+      color: var(--muted);
+      background: rgba(255,255,255,.03);
+    }
+
+    /* Player */
+    .player{
+      padding:14px;
+    }
+    .player-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+    .player h1{
+      font-size:18px;
+      margin:0;
+    }
+    .badge{
+      font-size:12px;
+      color: rgba(232,238,252,.95);
+      background: rgba(106,166,255,.18);
+      border:1px solid rgba(106,166,255,.35);
+      padding:6px 10px;
+      border-radius:999px;
+      white-space:nowrap;
+      font-weight:800;
+    }
+
+    .video-wrap{
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid var(--panelBorder);
+      background:#000;
+    }
+    .video-wrap iframe{
+      width:100%;
+      aspect-ratio:16/9;
+      border:0;
+      display:block;
+      background:#000;
+    }
+
+    .footer{
+      text-align:center;
+      color: var(--muted);
+      font-size:12px;
+      padding: 16px 0 0;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo"></div>
+      <div>Movie Watch</div>
+    </div>
+    <div class="top-right">
+      <div class="pill">Auto theme: OS preference</div>
+      <div class="pill" id="countPill">—</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="layout">
+      <aside class="panel">
+        <div class="tabs" role="tablist" aria-label="Movie categories" id="tabs">
+          <!-- JS fills tabs -->
+        </div>
+        <div class="list" id="movieList">
+          <h2 id="listHeading">Movies</h2>
+          <!-- JS fills movies -->
+        </div>
+      </aside>
+
+      <section class="panel player" aria-label="Movie player">
+        <div class="player-top">
+          <h1 id="playerTitle">—</h1>
+          <div class="badge" id="playerBadge">—</div>
+        </div>
+
+        <div class="video-wrap">
+          <iframe
+            id="playerFrame"
+            src="about:blank"
+            title="YouTube player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+
+        <div class="footer">Demo: YouTube embed ကိုအသုံးပြုထားသည်။ တရားဝင် sources သာထည့်ပါ။</div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    // Demo dataset (Replace with your official embed sources)
+    // Use YouTube video IDs or official embed-able URLs.
+    const catalog = [
+      {
+        id: "m1",
+        title: "Sample Movie 1",
+        category: "Action",
+        badge: "HD",
+        youtubeId: "dQw4w9WgXcQ",
+        desc: "Action category demo (YouTube embed)."
+      },
+      {
+        id: "m2",
+        title: "Sample Movie 2",
+        category: "Action",
+        badge: "4K",
+        youtubeId: "kJQP7kiw5Fk",
+        desc: "Action category demo."
+      },
+      {
+        id: "m3",
+        title: "Sample Movie 3",
+        category: "Drama",
+        badge: "New",
+        youtubeId: "9bZkp7q19f0",
+        desc: "Drama category demo."
+      },
+      {
+        id: "m4",
+        title: "Sample Movie 4",
+        category: "Comedy",
+        badge: "HD",
+        youtubeId: "3JZ_D3ELwOQ",
+        desc: "Comedy category demo."
+      }
+    ];
+
+    const tabsWrap = document.getElementById('tabs');
+    const movieList = document.getElementById('movieList');
+    const listHeading = document.getElementById('listHeading');
+    const playerTitle = document.getElementById('playerTitle');
+    const playerBadge = document.getElementById('playerBadge');
+    const playerFrame = document.getElementById('playerFrame');
+    const countPill = document.getElementById('countPill');
+
+    // Build categories
+    const categories = Array.from(new Set(catalog.map(x => x.category)));
+    categories.unshift("All");
+
+    let activeCategory = "All";
+    let activeMovieId = null;
+
+    function renderTabs(){
+      tabsWrap.innerHTML = "";
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'tab' + (cat === activeCategory ? ' active' : '');
+        btn.type = 'button';
+        btn.textContent = cat;
+        btn.addEventListener('click', () => {
+          activeCategory = cat;
+          renderTabs();
+          renderMovies();
+        });
+        tabsWrap.appendChild(btn);
+      });
+    }
+
+    function renderMovies(){
+      const filtered = (activeCategory === "All")
+        ? catalog
+        : catalog.filter(x => x.category === activeCategory);
+
+      countPill.textContent = `${filtered.length} titles`;
+
+      listHeading.textContent = activeCategory === "All" ? "Movies" : `${activeCategory} Movies`;
+
+      // remove old movie cards (keep heading)
+      const existing = document.querySelectorAll('.movie');
+      existing.forEach(el => el.remove());
+
+      filtered.forEach((m, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'movie' + ((activeMovieId === m.id) ? ' active' : '');
+        btn.type = 'button';
+
+        btn.innerHTML = `
+          <div class="thumb">${index + 1}</div>
+          <div class="meta">
+            <div class="title">${escapeHtml(m.title)}</div>
+            <p class="desc">${escapeHtml(m.desc || "")}</p>
+            <div class="tagrow">
+              <span class="tag">${escapeHtml(m.category)}</span>
+              <span class="tag">${escapeHtml(m.badge || "")}</span>
+            </div>
+          </div>
+        `;
+
+        btn.addEventListener('click', () => {
+          activeMovieId = m.id;
+          updatePlayer(m);
+          // re-render active state
+          renderMovies();
+        });
+
+        movieList.appendChild(btn);
+      });
+
+      // If first time or activeMovie not in filtered, pick first
+      if (!activeMovieId || !filtered.some(x => x.id === activeMovieId)) {
+        const first = filtered[0];
+        if (first) {
+          activeMovieId = first.id;
+          updatePlayer(first);
+        }
+      }
+    }
+
+    function updatePlayer(m){
+      playerTitle.textContent = m.title;
+      playerBadge.textContent = m.badge || "";
+      playerFrame.src = `https://www.youtube.com/embed/${m.youtubeId}`;
+    }
+
+    // Simple HTML escape
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
+
+    renderTabs();
+    renderMovies();
+  </script>
+</body>
+</html>
